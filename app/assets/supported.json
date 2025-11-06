@@ -1,0 +1,91 @@
+{
+    "audio": {
+        "inputs": [
+            "3gp",
+            "3gpp",
+            "aac",
+            "aiff",
+            "ape",
+            "avi",
+            "bik",
+            "cda",
+            "flac",
+            "flv",
+            "gif",
+            "m4v",
+            "mkv",
+            "mp4",
+            "m4a",
+            "m4b",
+            "mp3",
+            "mpg",
+            "mpeg",
+            "mov",
+            "oga",
+            "ogg",
+            "ogv",
+            "opus",
+            "rm",
+            "ts",
+            "vob",
+            "wav",
+            "webm",
+            "wma",
+            "wmv"
+        ],
+        "outputs": [
+            "flac",
+            "aac",
+            "ogg",
+            "mp3",
+            "wav"
+        ]
+    },
+    "video": {
+        "inputs": [
+            "3g2", "3gp", "3gpp", "avi", "cavs", "dv", "dvr", "flv",
+            "m2ts", "m4v", "mkv", "mod", "mov", "mp4", "mpeg", "mpg",
+            "mts", "mxf", "ogg", "rm", "rmvb", "swf", "ts", "vob",
+            "webm", "wmv", "wtv"
+        ],
+        "outputs": [
+            "webm",
+            "mkv",
+            "mp4",
+            "avi",
+            "mov",
+            "mp3",
+            "aac",
+            "flac"
+        ]
+    },
+    "image": {
+        "inputs": [
+            "png",
+            "jpeg",
+            "jpg",
+            "gif",
+            "bmp",
+            "tiff",
+            "webp",
+            "ico",
+            "pnm",
+            "tga",
+            "dds",
+            "farbfeld"
+        ],
+        "outputs": [
+            "png",
+            "jpeg",
+            "jpg",
+            "gif",
+            "bmp",
+            "tiff",
+            "webp",
+            "ico",
+            "pnm",
+            "tga",
+            "farbfeld"
+        ]
+    }
+}
