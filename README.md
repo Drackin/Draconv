@@ -26,7 +26,7 @@
 ![Screenshot 3](./public/thumb3.png)
 
 ## ⬇️ Download
-Get the latest release from the [Releases page]
+Get the latest release from the [Releases page](https://github.com/Drackin/Draconv/releases/tag/alpha)
 
 ## ⌛ Incoming Features
 - AI Video Upscaling. (Just Thinking)
