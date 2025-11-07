@@ -3,7 +3,7 @@
 
             <div class="flex items-center pr-4">
                 <Icon
-                    :name="icon"
+                    :name="getIcon()"
                     class="text-4xl"
                 />
             </div>
@@ -93,18 +93,11 @@ const {
     startConversion: () => void,
 }>()
 
-const icon = ref('solar:file-outline')
 const fileStore = useFileStore()
 const fileData = fileStore.file_data
 
-onMounted(() => {
-    icon.value = getIcon(fileData?.file_type || '')
-})
-
-
-
-const getIcon = (type: string) => {
-    switch(type) {
+const getIcon = () => {
+    switch(fileData?.file_type) {
         case 'video':
             return 'solar:clapperboard-play-outline'
         case 'audio':
