@@ -50,7 +50,7 @@
         </p>
         <p class="text-sm flex flex-col">
             <span class="text-gray-300">Total Time:</span>
-            <span>{{ conversionOutput?.total_time }} seconds</span>
+            <span>{{ formatTime() }}</span>
         </p>
 
         <template v-slot:footer>
@@ -216,6 +216,20 @@ const checkConnection = () => {
 const cancelConversion = async () => {
     isCancelling.value = false
     appWindow.emit("cancel-conversion")
+}
+
+const formatTime = () => {
+    const totalSeconds = conversionOutput.value?.total_time || 0
+    const timeArray: string[] = []
+    const hours = Math.floor(totalSeconds / 3600)
+    const minutes = Math.floor((totalSeconds % 3600) / 60)
+    const seconds = Math.floor(totalSeconds % 60)
+
+    if(hours > 0) hours === 1 ? timeArray.push("1 hour") : timeArray.push(`${hours} hours`)
+    if(minutes > 0) minutes === 1 ? timeArray.push("1 minute") : timeArray.push(`${minutes} minutes`)
+    timeArray.push(`${seconds} seconds`)
+
+    return timeArray.join(" ")
 }
 
 const selectFile = async () => {

@@ -200,7 +200,7 @@ async fn convert(
             let output = child.wait_with_output().await?;
 
             if output.status.success() {
-                let total_time = (timer.elapsed().as_secs_f64() * 10.0).trunc() / 10.0;
+                let total_time = timer.elapsed().as_secs();
                 let data = json!({
                     "total_time": total_time,
                     "new_file_path": output_path
