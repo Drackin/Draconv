@@ -189,8 +189,13 @@ pub async fn ffmpeg_builder(
 
         // Lossless CPU params
         if lossless && matches!(encoder, Encoder::CPU) {
-            cmd.push("-crf".to_string());
-            cmd.push("18".to_string());
+            if output_format == "webm" {
+                cmd.push("-crf".to_string());
+                cmd.push("30".to_string());
+            } else {
+                cmd.push("-crf".to_string());
+                cmd.push("18".to_string());
+            }
         }
 
         // HWAccel / GPU params
