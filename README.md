@@ -50,3 +50,5 @@ Get the latest release from the [Releases page](https://github.com/Drackin/Draco
 - No fully tested Linux support.
 
 ***Made with Tauri*** ❤️
+
+This project is licensed under CC BY-NC 4.0 — see LICENSE for details.
