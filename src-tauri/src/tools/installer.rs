@@ -36,7 +36,7 @@ use crate::tools::app_handle::app;
 
 #[tauri::command]
 pub fn is_ffmpeg_installed() -> bool {
-    app().path().resource_dir()
+    app().path().app_data_dir()
         .ok()
         .map(|dir| {
             let ffmpeg_path = if cfg!(target_os = "windows") {
@@ -80,7 +80,7 @@ pub async fn start_install_ffmpeg() -> Result<(), FFmpegError> {
 
     app().emit("ffmpeg-install-state", "downloading").unwrap();
 
-    let ffmpeg_dir = app().path().resource_dir().expect("Error resolving resource dir").join("bin");
+    let ffmpeg_dir = app().path().app_data_dir().expect("Error resolving resource dir").join("bin");
     let down_path = if cfg!(target_os = "linux") {
         ffmpeg_dir.join("ffmpeg.tar.xz")
     } else {
@@ -118,7 +118,7 @@ pub async fn start_install_ffmpeg() -> Result<(), FFmpegError> {
 }
 
 pub async fn setup_ffmpeg() -> Result<(), FFmpegError> {
-    let ffmpeg_dir = app().path().resource_dir().expect("Error resolving resource dir").join("bin");
+    let ffmpeg_dir = app().path().app_data_dir().expect("Error resolving resource dir").join("bin");
 
     app().emit("ffmpeg-install-state", "installing").unwrap();
 
@@ -186,7 +186,7 @@ pub async fn setup_ffmpeg() -> Result<(), FFmpegError> {
 }
 
 pub fn clean_installation() {
-    let ffmpeg_dir = app().path().resource_dir().expect("Error resolving resource dir").join("bin");
+    let ffmpeg_dir = app().path().app_data_dir().expect("Error resolving resource dir").join("bin");
 
     app().emit("ffmpeg-install-state", "cleaning").unwrap();
 

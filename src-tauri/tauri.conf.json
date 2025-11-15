@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Draconv",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "identifier": "draconv",
   "build": {
     "frontendDist": "../dist",
@@ -27,6 +27,7 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "shortDescription": "A modern, open-source file converter.",
     "resources": [
       "settings/"
     ],

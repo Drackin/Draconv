@@ -13,7 +13,7 @@ pub struct Settings {
 fn get_settings_path(app: &AppHandle) -> PathBuf {
     let settings_path = app
         .path()
-        .resolve("settings/default.json", BaseDirectory::Resource)
+        .resolve("settings/default.json", BaseDirectory::AppData)
         .expect("error resolving settings file");
 
     if let Some(parent) = settings_path.parent() {

@@ -129,7 +129,7 @@ async fn convert(
                 .path()
                 .resolve(
                     if cfg!(target_os = "windows") { "bin/ffmpeg.exe" } else { "bin/ffmpeg" },
-                    BaseDirectory::Resource,
+                    BaseDirectory::AppData,
                 ).map_err(|e| Error::Io(e.to_string()))?;
 
 
