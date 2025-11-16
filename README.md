@@ -1,5 +1,11 @@
-## ⚠️ WARNING: THIS VERSION IS A PRE-ALPHA. IT MAY CONTAIN BUGS AND MISSING FEATURES. ⚠️
-⚠️ **NOT FULLY TESTED IN ALL PLATFORMS.** ⚠️
+<div align="center">
+    <br>
+    <img src="./public/icon.png" width="102px" alt="Draconv Logo" />
+    <h1>Draconv</h1>
+    <p>A modern, fast and open-source file converter.</p>
+    <p>⚠️ WARNING: THIS VERSION IS A PRE-ALPHA. IT MAY CONTAIN BUGS AND MISSING FEATURES. ⚠️</p>
+</div>
+
 
 ![Draconv Banner](./public/banner.png)
 
@@ -10,7 +16,7 @@
 
 ## ✨ Features
 
-- ⚠️ (WORKS FINE ON WINDOWS) 💻 **Cross-platform**: Works on Windows, macOS, and Linux. ⚠️ (Full test only for Windows. I'll test the others later) ⚠️
+- ⚠️ (NOT TESTED ON MACOS) 💻 **Cross-platform**: Works on Windows, macOS, and Linux.
 - 💨 **Fast Conversion**: Utilizes the power of [FFmpeg](https://ffmpeg.org/) for efficient video processing.
 - 🪶 **Minimal UI**: Clean and user-friendly interface. No unnecessary clutter.
 - ⬇️ **Drag and Drop**: Easily add files by dragging and dropping them into the app.
@@ -21,34 +27,36 @@
 <!-- - **Batch Processing**: Convert multiple files at once. -->
 
 ## 📷 Screenshots
-![Screenshot 1](./public/thumb1.png)
-![Screenshot 2](./public/thumb2.png)
-![Screenshot 3](./public/thumb3.png)
+<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;">
+    <img src="./public/thumb1.png" alt="Draconv Logo" />
+    <img src="./public/thumb2.png" alt="Draconv Logo" />
+    <img src="./public/thumb3.png" alt="Draconv Logo" />
+</div>
 
 ## ⬇️ Download
 Get the latest release from the [Releases page](https://github.com/Drackin/Draconv/releases/tag/alpha)
 
 ## ⌛ Incoming Features
-- AI Video Upscaling. (Just Thinking)
-- Multiple files at once.
-- Logging: View detailed logs of conversion processes in a file.
-- Better file handling (temporary file until done, select save location, etc).
-- More output formats.
-- More UI improvements.
-- More conversion options.
-- More input/output settings.
-- More options at settings.
-- Multiple language support.
-- CLI support.
-- Useful shortcuts.
-- Notifications.
-- Conversion History.
-- Presets for conversion settings.
+- [ ] AI Video Upscaling. (Just Thinking)
+- [ ] Multiple files at once.
+- [ ] Logging: View detailed logs of conversion processes in a file.
+- [ ] Better file handling (temporary file until done, select save location, etc).
+- [ ] More output formats.
+- [ ] More UI improvements.
+- [ ] More conversion options.
+- [ ] More input/output settings.
+- [ ] More options at settings.
+- [ ] Multiple language support.
+- [ ] CLI support.
+- [ ] Useful shortcuts.
+- [ ] Notifications.
+- [ ] Conversion History.
+- [ ] Presets for conversion settings.
 
 ## 🪲 Known Issues
 - Not tested on macOS.
-- No fully tested Linux support.
+- [Linux Error with AppImage] Could not create default EGL display: EGL_BAD_PARAMETER. Aborting... (Tauri issue?)
 
 ***Made with Tauri*** ❤️
 
-This project is licensed under CC BY-NC 4.0 — see LICENSE for details.
+This project is licensed under NPOSL-3.0 — see LICENSE for details.
