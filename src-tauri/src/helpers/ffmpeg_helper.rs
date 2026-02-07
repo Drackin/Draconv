@@ -1,8 +1,5 @@
+use crate::helpers::{gpu_helper::select_best_encoder, settings_helper::load_settings};
 use std::{path::PathBuf, process::Command};
-
-use crate::tools::app_handle::app;
-
-use super::{gpu_helper::select_best_encoder, settings_helper::load_settings};
 
 #[derive(Debug)]
 pub enum Encoder {
@@ -10,96 +7,114 @@ pub enum Encoder {
     NVENC,
     AMF,
     QSV,
+    APPLE,
 }
 
 struct CodecProfile {
-    video: &'static str,
+    video: String,
     audio: &'static str,
     disable_video: bool,
     hwaccel_supported: bool,
+    arguments: Vec<String>,
 }
 
 fn get_codec_profile(format: &str) -> CodecProfile {
+    let settings = load_settings();
+    let default_enc = settings.default_encoder;
+
     match format {
         "mp4" => CodecProfile {
-            video: "libx264",
+            video: default_enc,
             audio: "aac",
             disable_video: false,
             hwaccel_supported: true,
+            arguments: vec![],
         },
         "webm" => CodecProfile {
-            video: "libvpx-vp9",
+            video: "libvpx-vp9".into(),
             audio: "libopus",
             disable_video: false,
             hwaccel_supported: false,
+            arguments: vec![],
         },
         "mov" => CodecProfile {
-            video: "libx264",
+            video: default_enc,
             audio: "aac",
             disable_video: false,
             hwaccel_supported: true,
+            arguments: vec![],
         },
         "avi" => CodecProfile {
-            video: "mpeg4",
-            audio: "mp3",
-            disable_video: false,
-            hwaccel_supported: true,
-        },
-        "mkv" => CodecProfile {
-            video: "libx264",
-            audio: "aac",
-            disable_video: false,
-            hwaccel_supported: true,
-        },
-        "flv" => CodecProfile {
-            video: "flv",
+            video: "mpeg4".into(),
             audio: "mp3",
             disable_video: false,
             hwaccel_supported: false,
+            arguments: vec!["-quality".into(), "quality".into()],
+        },
+        "mkv" => CodecProfile {
+            video: default_enc,
+            audio: "libopus",
+            disable_video: false,
+            hwaccel_supported: true,
+            arguments: vec![],
+        },
+        "flv" => CodecProfile {
+            video: "flv".into(),
+            audio: "mp3",
+            disable_video: false,
+            hwaccel_supported: false,
+            arguments: vec![],
         },
         "wmv" => CodecProfile {
-            video: "msmpeg4",
+            video: "msmpeg4".into(),
             audio: "wmav2",
             disable_video: false,
             hwaccel_supported: false,
+            arguments: vec![],
         },
 
         "mp3" => CodecProfile {
-            video: "none",
+            video: "none".into(),
             audio: "libmp3lame",
             disable_video: true,
             hwaccel_supported: false,
+            arguments: vec![],
         },
         "aac" => CodecProfile {
-            video: "none",
+            video: "none".into(),
             audio: "aac",
             disable_video: true,
             hwaccel_supported: false,
+            arguments: vec![],
         },
         "flac" => CodecProfile {
-            video: "none",
+            video: "none".into(),
             audio: "flac",
             disable_video: true,
             hwaccel_supported: false,
+            arguments: vec![],
         },
         "wav" => CodecProfile {
-            video: "none",
+            video: "none".into(),
             audio: "pcm_s16le",
             disable_video: true,
             hwaccel_supported: false,
+            arguments: vec![],
         },
         "ogg" => CodecProfile {
-            video: "none",
+            video: "none".into(),
             audio: "libopus",
             disable_video: true,
             hwaccel_supported: false,
+            arguments: vec![],
         },
 
         _ => CodecProfile {
-            video: "libx264",
+            video: default_enc,
             audio: "aac",
             disable_video: false,
             hwaccel_supported: true,
+            arguments: vec![],
         },
     }
 }
@@ -136,75 +151,73 @@ pub fn get_video_duration_millis(ffmpeg_path: PathBuf, path: &str) -> f64 {
         .unwrap_or(0.0)
 }
 
-pub async fn ffmpeg_builder(
-    input: &str,
-    output_path: &str,
-    output_format: &str,
-) -> Vec<String> {
+pub async fn ffmpeg_builder(input: &str, output_path: &str, output_format: &str) -> Vec<String> {
     let profile = get_codec_profile(output_format);
-    let settings = load_settings(app().to_owned());
+    let settings = load_settings();
 
     let lossless = settings.conversion_mode == "lossless";
 
+    let (gpu_type, hw_accel_encoder, encoder_params, hw_accel_method) = select_best_encoder().await;
+
+    let use_hw = !profile.disable_video
+        && profile.hwaccel_supported
+        && matches!(gpu_type, Encoder::NVENC | Encoder::AMF | Encoder::QSV);
+
     let mut cmd = vec![
+        "-y".to_string(),
         "-progress".to_string(),
         "pipe:1".to_string(),
         "-nostats".to_string(),
         "-loglevel".to_string(),
         "error".to_string(),
-        "-i".to_string(),
-        input.to_string(),
     ];
 
-    if !profile.disable_video {
-        let (encoder, encoder_params) = select_best_encoder(app()).await;
+    if use_hw && hw_accel_method != "none" {
+        cmd.push("-hwaccel".to_string());
+        cmd.push(hw_accel_method.clone());
 
-        let encoder_str = match encoder {
-            Encoder::CPU => profile.video,
-            Encoder::NVENC => {
-                if profile.hwaccel_supported {
-                    "h264_nvenc"
-                } else {
-                    profile.video
-                }
-            }
-            Encoder::AMF => {
-                if profile.hwaccel_supported {
-                    "h264_amf"
-                } else {
-                    profile.video
-                }
-            }
-            Encoder::QSV => {
-                if profile.hwaccel_supported {
-                    "h264_qsv"
-                } else {
-                    profile.video
-                }
-            }
+        // Intel and Nvidia hwaccel methods need specific output formats
+        if hw_accel_method == "cuda" {
+            cmd.push("-hwaccel_output_format".to_string());
+            cmd.push("cuda".to_string());
+        }
+
+        if hw_accel_method == "qsv" {
+            cmd.push("-hwaccel_output_format".to_string());
+            cmd.push("qsv".to_string());
+        }
+    }
+
+    cmd.push("-i".to_string());
+    cmd.push(input.to_string());
+
+    if !profile.disable_video {
+        let encoder = if use_hw {
+            hw_accel_encoder
+        } else {
+            profile.video
         };
 
         cmd.push("-c:v".to_string());
-        cmd.push(encoder_str.to_string());
+        cmd.push(encoder);
 
-        // Lossless CPU params
-        if lossless && matches!(encoder, Encoder::CPU) {
-            if output_format == "webm" {
-                cmd.push("-crf".to_string());
-                cmd.push("30".to_string());
-            } else {
-                cmd.push("-crf".to_string());
-                cmd.push("18".to_string());
-            }
-        }
-
-        // HWAccel / GPU params
-        if profile.hwaccel_supported {
+        if use_hw {
             cmd.extend(encoder_params.iter().map(|s| s.to_string()));
+        } else if lossless {
+            let crf = if output_format == "webm" { "30" } else { "18" };
+            cmd.extend(vec!["-crf".into(), crf.into()]);
+        } else {
+            cmd.extend(vec![
+                "-crf".into(),
+                "23".into(),
+                "-preset".into(),
+                "medium".into(),
+            ]);
         }
     } else {
         cmd.push("-vn".to_string()); // if no video
     }
+    cmd.extend(profile.arguments);
 
     // Audio codec
     cmd.push("-c:a".to_string());

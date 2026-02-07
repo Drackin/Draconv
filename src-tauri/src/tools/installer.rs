@@ -1,26 +1,26 @@
-use std::{cmp::min, io::Write};
-use thiserror::Error;
-use reqwest::Client;
-use tar::Archive;
-use tauri::{Emitter, Manager};
-use std::fs;
 use futures_util::StreamExt;
-use xz::read::XzDecoder;
+use reqwest::Client;
+use std::fs;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
+use std::{cmp::min, io::Write};
+#[cfg(target_os = "linux")]
+use tar::Archive;
+use tauri::{Emitter, Manager};
+use thiserror::Error;
+#[cfg(target_os = "linux")]
+use xz::read::XzDecoder;
 
 #[derive(Debug, Error)]
 pub enum FFmpegError {
     #[error("[FFmpeg Install] IO Error: {0}")]
     Io(#[from] std::io::Error),
 
-
     #[error("[FFmpeg Install] Request Error: {0}")]
     Reqwest(#[from] reqwest::Error),
 
     #[error("[FFmpeg Install] Archive Error: {0}")]
     ZipError(#[from] zip::result::ZipError),
-
 
     #[error("[FFmpeg Install] Error: {0}")]
     Other(String),
@@ -36,7 +36,9 @@ use crate::tools::app_handle::app;
 
 #[tauri::command]
 pub fn is_ffmpeg_installed() -> bool {
-    app().path().app_data_dir()
+    app()
+        .path()
+        .app_local_data_dir()
         .ok()
         .map(|dir| {
             let ffmpeg_path = if cfg!(target_os = "windows") {
@@ -78,9 +80,18 @@ pub async fn start_install_ffmpeg() -> Result<(), FFmpegError> {
 
     let total_size = res.content_length().unwrap();
 
+    println!(
+        "Starting ffmpeg download from {}",
+        (total_size as f64 / (1024.0 * 1024.0))
+    );
+
     app().emit("ffmpeg-install-state", "downloading").unwrap();
 
-    let ffmpeg_dir = app().path().app_data_dir().expect("Error resolving resource dir").join("bin");
+    let ffmpeg_dir = app()
+        .path()
+        .app_local_data_dir()
+        .expect("Error resolving resource dir")
+        .join("bin");
     let down_path = if cfg!(target_os = "linux") {
         ffmpeg_dir.join("ffmpeg.tar.xz")
     } else {
@@ -98,7 +109,8 @@ pub async fn start_install_ffmpeg() -> Result<(), FFmpegError> {
     while let Some(item) = stream.next().await {
         let chunk = item?;
 
-        file.write_all(&chunk).map_err(|_| ffmpeg_err!("Error while downloading file."))?;
+        file.write_all(&chunk)
+            .map_err(|_| ffmpeg_err!("Error while downloading file."))?;
 
         let new = min(downloaded + (chunk.len() as u64), total_size);
 
@@ -107,18 +119,23 @@ pub async fn start_install_ffmpeg() -> Result<(), FFmpegError> {
         let progress = ((downloaded as f64 / total_size as f64) * 100.0).min(100.0) as i32;
 
         app().emit("ffmpeg-install-progress", progress).unwrap()
-
     }
 
     if let Err(e) = setup_ffmpeg().await {
-        app().emit("ffmpeg-failed", format!("Failed to setup ffmpeg: {}", e)).unwrap()
+        app()
+            .emit("ffmpeg-failed", format!("Failed to setup ffmpeg: {}", e))
+            .unwrap()
     }
 
     Ok(())
 }
 
 pub async fn setup_ffmpeg() -> Result<(), FFmpegError> {
-    let ffmpeg_dir = app().path().app_data_dir().expect("Error resolving resource dir").join("bin");
+    let ffmpeg_dir = app()
+        .path()
+        .app_local_data_dir()
+        .expect("Error resolving resource dir")
+        .join("bin");
 
     app().emit("ffmpeg-install-state", "installing").unwrap();
 
@@ -142,7 +159,8 @@ pub async fn setup_ffmpeg() -> Result<(), FFmpegError> {
                 } else {
                     None
                 }
-            }).ok_or_else(|| ffmpeg_err!("Could not find extracted ffmpeg folder"))?;
+            })
+            .ok_or_else(|| ffmpeg_err!("Could not find extracted ffmpeg folder"))?;
         let unpacked = extracted_dir.join("bin").join("ffmpeg.exe");
         let new_file = ffmpeg_dir.join("ffmpeg.exe");
 
@@ -160,33 +178,40 @@ pub async fn setup_ffmpeg() -> Result<(), FFmpegError> {
             let tar = XzDecoder::new(archive_file);
             let mut tar_xz = Archive::new(tar);
 
-            tar_xz.unpack(&ffmpeg_dir).map_err(|_| ffmpeg_err!("Error decompressing ffmpeg archive"))?;
+            tar_xz
+                .unpack(&ffmpeg_dir)
+                .map_err(|_| ffmpeg_err!("Error decompressing ffmpeg archive"))?;
 
-            let unpacked = ffmpeg_dir.join("ffmpeg-master-latest-linux64-gpl").join("bin").join("ffmpeg");
+            let unpacked = ffmpeg_dir
+                .join("ffmpeg-master-latest-linux64-gpl")
+                .join("bin")
+                .join("ffmpeg");
             fs::copy(unpacked, &new_file)?;
-        } else if cfg!(target_os = "macos") {            
+        } else if cfg!(target_os = "macos") {
             let archive = ffmpeg_dir.join("ffmpeg.zip");
-    
+
             let file = fs::File::open(archive)?;
-    
+
             let mut zip_archive = zip::ZipArchive::new(&file)?;
-    
+
             zip_archive.extract(&ffmpeg_dir)?;
         }
 
-        
         let metadata = fs::metadata(&new_file)?;
         let mut perms = metadata.permissions();
         perms.set_mode(0o755); // executable permission
         fs::set_permissions(&new_file, perms).unwrap();
-
     };
 
     Ok(clean_installation())
 }
 
 pub fn clean_installation() {
-    let ffmpeg_dir = app().path().app_data_dir().expect("Error resolving resource dir").join("bin");
+    let ffmpeg_dir = app()
+        .path()
+        .app_local_data_dir()
+        .expect("Error resolving resource dir")
+        .join("bin");
 
     app().emit("ffmpeg-install-state", "cleaning").unwrap();
 

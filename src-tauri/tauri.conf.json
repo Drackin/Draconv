@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Draconv",
-  "version": "0.1.2",
+  "version": "1.0-beta",
   "identifier": "draconv",
   "build": {
     "frontendDist": "../dist",
@@ -12,6 +12,7 @@
   "app": {
     "windows": [
       {
+        "label": "main",
         "title": "Draconv",
         "width": 800,
         "height": 600,
@@ -26,11 +27,10 @@
   },
   "bundle": {
     "active": true,
+    "createUpdaterArtifacts": true,
     "targets": "all",
-    "shortDescription": "A modern, open-source file converter.",
-    "resources": [
-      "settings/"
-    ],
+    "shortDescription": "A modern, free and open-source file converter.",
+    "publisher": "Drackin",
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",
@@ -43,6 +43,14 @@
         "installerIcon": "icons/icon.ico",
         "sidebarImage": "icons/sidebar.bmp"
       }
+    }
+  },
+  "plugins": {
+    "updater": {
+      "endpoints": [
+        "https://github.com/Drackin/Draconv/releases/latest/download/latest.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEJENTYxNTNBQTY0Rjc3RjkKUldUNWQwK21PaFZXdlJkcU1NV3QrTUo5OUJ2dGI1L1lvbHZsVDBTWDFJNnNVa1RnTFc3UzhyamsK"
     }
   }
 }
