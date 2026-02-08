@@ -1,21 +1,29 @@
 <template>
-    <div class="p-3 select-none">
-        <NuxtPage />
+    <div class="w-screen h-screen">
+        <div class="fixed w-full -bottom-5 left-0 z-[-1]">
+            <img src="/bg.svg" class="w-full h-full" alt="">
+        </div>
+        <DNavbar />
+        <main class="p-3 w-full overflow-auto" style="height: calc(100% - 3.5rem);">
+            <NuxtPage />
+        </main>
     </div>
 </template>
 
 <style>
-@import "tailwindcss";
-
 :root, body {
     color: #fff;
-    background: #111;
     color-scheme: dark;
-    font-family: "Inter", sans-serif;
+    font-family: "Space Grotesk", sans-serif;
+    user-select: none;
+}
+
+body {
+    background: #111;
 }
 
 @font-face {
-    font-family: 'Inter';
-    src: url("/Inter/inter-variable.ttf") format("truetype");
+    font-family: 'Space Grotesk';
+    src: url("/SpaceGrotesk/space-grotesk-variable.ttf") format("truetype");
 }
 </style>

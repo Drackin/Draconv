@@ -1,19 +1,21 @@
 <template>
-
-    <div class="relative" @mouseenter="tooltipTrigger" @mouseleave="tooltipTrigger">
-        <teleport to="body">
-            <section
-                ref="contentRef"
-                class="fixed hidden opacity-0 z-10 p-2 bg-[#222] border border-zinc-700 rounded-md text-sm text-gray-300 shadow-lg tooltip-content"
+    <Teleport to="body">
+        <Transition :css="false" @enter="onEnter" @leave="onLeave">
+            <div
+                v-if="isOpen"
+                ref="tooltipRef"
+                role="tooltip"
+                class="fixed max-w-[90vw] opacity-0 z-10 p-2 bg-[#111] border border-zinc-800 rounded-md text-sm text-gray-300 shadow-lg break-all pointer-events-none"
                 :style="{ top: pos.top + 'px', left: pos.left + 'px' }"
             >
+                <span v-if="props.title">{{ title }}</span>
                 <slot name="content" />
-            </section>
-        </teleport>
-    
-        <div ref="target">
-            <slot></slot>
-        </div>
+            </div>
+        </Transition>
+    </Teleport>
+
+    <div class="inline-block w-fit h-fit" ref="triggerRef" @focusin="show" @focusout="hide" @mouseenter="show" @mouseleave="hide">
+        <slot />
     </div>
 
 </template>
@@ -22,38 +24,84 @@
 <script setup lang="ts">
 import { gsap } from "gsap";
 
-const contentRef = ref<HTMLElement | null>(null);
-const target = ref<HTMLElement | null>(null);
+const triggerRef = ref<HTMLElement | null>(null);
+const tooltipRef = ref<HTMLElement | null>(null);
 const isOpen = ref(false);
-const tl = ref<gsap.core.Timeline | null>(null);
 const pos = ref({ top: 0, left: 0 });
 
-const updatePosition = () => {
-    if (!target.value || !contentRef.value) return;
+const props = defineProps<{
+    title?: string
+}>()
 
-    const rect = target.value.getBoundingClientRect();
-    const ttRect = contentRef.value.getBoundingClientRect();
+const calculatePosition = () => {
+    if (!triggerRef.value || !tooltipRef.value) return;
+
+    const triggerRect = triggerRef.value.getBoundingClientRect()
+    const tooltipRect = tooltipRef.value.getBoundingClientRect()
+    const windowWidth = window.innerWidth
+    const padding = 12; // Gap from window edges
+    const gap = 8;      // Gap from trigger element
+
+    let left = triggerRect.left + (triggerRect.width / 2) - (tooltipRect.width / 2)
+    left = Math.max(padding, Math.min(left, windowWidth - tooltipRect.width - padding));
+
+    let top = triggerRect.top - tooltipRect.height - gap
+
+    if (top < padding) {
+        top = triggerRect.bottom + gap
+    }
+
+
+    if (left < padding) {
+        left = padding
+    } else if (left + tooltipRect.width > windowWidth - padding) {
+        left = windowWidth - tooltipRect.width - padding
+    }
 
     pos.value = {
-        top: rect.top - window.scrollY - rect.height - 16, // 8px yukarı boşluk
-        left: rect.left + window.scrollX - (ttRect.width / 2),
-    };
+        top,
+        left,
+    }
 }
 
-onMounted(() => {
-    tl.value = gsap.timeline({ paused: true, reversed: true, defaults: { delay: 0.3, duration: 0.1 } })
-    .fromTo(contentRef.value, { display: "none", opacity: 0 }, { display: "flex", opacity: 1 })
-});
+const show = async () => { isOpen.value = true }
+const hide = () => { isOpen.value = false }
 
-const tooltipTrigger = async () => {
-    if(!isOpen.value) {
-        updatePosition()
-        await nextTick()
-        tl.value?.play()
-    }
-    else
-        tl.value?.reverse()
+const onEnter = (el: Element, done: () => void) => {
+    calculatePosition()
 
-    isOpen.value = !isOpen.value
+    gsap.fromTo(el,
+        {
+            opacity: 0,
+            y: 5, 
+            scale: 0.95, 
+        },
+        { 
+            opacity: 1,
+            y: 0,
+            scale: 1,
+            duration: 0.2,
+            ease: "power2.in",
+            onComplete: () => {
+                done();
+                window.addEventListener('scroll', calculatePosition, { passive: true });
+            }
+        }
+    )
+}
+
+const onLeave = (el: Element, done: () => void) => {
+
+    gsap.to(el, {
+        opacity: 0,
+        scale: 0.95,
+        y: 5,
+        duration: 0.2,
+        ease: "power2.in",
+        onComplete: done
+    })
+
+    window.removeEventListener("scroll", calculatePosition)
+
 }
 </script>

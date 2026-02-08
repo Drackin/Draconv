@@ -1,52 +1,92 @@
 <template>
 
-    <DNavbar />
+    <main class="w-full h-full flex flex-col">
+        <section v-if="fileStore.files.length === 1" class="w-full flex space-x-2 transition-all duration-200 h-32 mb-2">
+            <div
+                class="w-1/2 rounded-xl border border-dashed border-zinc-700 flex flex-col items-center justify-center space-y-2">
+                <p v-if="!isDragEnter">Drag & Drop Here</p>
+                <p v-else>Drop Anywhere</p>
 
-    <section class="w-full flex space-x-2 my-2">
-        <div v-if="isDragEnter" class="w-1/2 h-64 rounded-xl border border-dashed border-zinc-700 flex flex-col items-center justify-center space-y-2">
-            <p>Drop Here</p>
-            <Icon name="solar:arrow-down-outline" class="text-4xl" />
+                <Icon v-if="!isDragEnter" name="solar:copy-outline" class="text-4xl" />
+                <Icon v-if="isDragEnter" name="solar:arrow-down-outline" class="text-4xl" />
+            </div>
+
+            <div class="w-1/2 rounded-xl border border-zinc-700 flex flex-col items-center justify-center space-y-2">
+                <p>or Select File</p>
+                <DButton @click="selectFile" icon="solar:folder-with-files-outline">Open</DButton>
+            </div>
+        </section>
+
+        <div v-if="!fileStore.files.length" class="w-full h-full flex flex-col space-y-2 items-center justify-center p-4 bg-[#111]/50 backdrop-blur-lg border border-dashed border-zinc-700 rounded-xl">
+            <p class="text-xl">Drag and drop files here</p>
+            <p class="text-gray-400">Or click to select files</p>
+
+            <DButton @click="selectFile" icon="solar:folder-with-files-outline">Select Files</DButton>
         </div>
-        
-        <div v-else class="w-1/2 h-64 rounded-xl border border-dashed border-zinc-700 flex flex-col items-center justify-center space-y-2">
-        <p>Drag & Drop Here</p>
-            <Icon name="solar:copy-outline" class="text-4xl" />
-        </div>
 
-        <div class="w-1/2 h-64 rounded-xl border border-zinc-700 flex flex-col items-center justify-center space-y-2">
-            <p>or Select File</p>
-            <DButton @click="selectFile" size="xl">Open</DButton>
-        </div>
-    </section>
+        <Transition name="fade">
+            <div v-if="fileStore.files.length > 1" class="w-full flex border border-zinc-700 p-2 rounded-xl mb-2">
+                <div class="flex flex-col w-full">
+                    <p>Total Files: {{ fileStore.files.length }}</p>
+                    <p>Converted Files: {{ fileStore.convertedFiles.length }}</p>
+                </div>
 
-    <Transition name="file-info">
-        <DConvertItem v-if="fileStore.file_data" @cancel-request="() => isCancelling = true" :startConversion="convert" :progressPercent="progressPercent" conversion-status="idle" :isSupported="isSupported" :convertibles="convertibles" />
-    </Transition>
+                <section class="flex w-full justify-end space-x-2 h-12 whitespace-nowrap">
+                    <DButton @click="selectFile" :disabled="fileStore.isProcessing" variant="neutral" icon="ic:round-plus">Add New</DButton>
+                    <DButton @click="() => dialog.isDeletingAll = true" :disabled="fileStore.isProcessing" variant="error" icon="solar:trash-bin-trash-outline">Delete All</DButton>
+                    <DButton @click="convertAll" :disabled="fileStore.isProcessing" icon="solar:refresh-outline">Convert All</DButton>
+                </section>
+            </div>
+        </Transition>
 
-    <DModal v-model="isCancelling">
+        <TransitionGroup name="file-info" tag="ul" class="flex flex-col space-y-2 transition-all relative" @before-leave="onBeforeLeave">
+            <DConvertItem
+                v-for="file_data in fileStore.files"
+                :key="file_data.id"
+                :id="file_data.id"
+                @cancel-request="() => requestCancel(file_data.id)"
+                :startConversion="() => convert(file_data.id)"
+            />
+        </TransitionGroup>
+
+    </main>
+
+    <DModal v-model="dialog.isCancelling">
         <p>Are you sure you want to cancel the process?</p>
 
         <template v-slot:footer>
             <div class="w-full flex space-x-2 justify-end">
-                <DButton @click="isCancelling = false" class="font-semibold" variant="error">Close</DButton>
+                <DButton @click="dialog.isCancelling = false" class="font-semibold" variant="error">Close</DButton>
                 <DButton @click="cancelConversion" class="font-semibold">Yes</DButton>
             </div>
         </template>
     </DModal>
 
-    <DModal v-model="isDialogOpen" :title="(errorTitle as string) || 'Error'">
-        <p class="overflow-auto">{{ errorDescription }}</p>
+    <DModal v-model="dialog.isDeletingAll">
+        <p>Are you sure you want to delete all selected files?</p>
 
         <template v-slot:footer>
-            <DButton @click="isDialogOpen = false" class="font-semibold self-end" variant="error">Close</DButton>
+            <div class="w-full flex space-x-2 justify-end">
+                <DButton @click="dialog.isDeletingAll = false" class="font-semibold" variant="error">Close</DButton>
+                <DButton @click="() => { fileStore.$reset(); dialog.isDeletingAll = false }" class="font-semibold">Yes
+                </DButton>
+            </div>
         </template>
     </DModal>
 
-    <DModal :modelValue="fileStore.conversionStatus === 'success'" title="Conversion Successful">
+    <DModal v-model="dialog.isDialogOpen" :title="(errorTitle as string) || 'Error'">
+        <p class="overflow-auto">{{ errorDescription }}</p>
+
+        <template v-slot:footer>
+            <DButton @click="dialog.isDialogOpen = false" class="font-semibold self-end" variant="error">Close</DButton>
+        </template>
+    </DModal>
+
+    <DModal v-model="dialog.isConversionInfoOpen" title="Conversion Successful">
         <p>The file has been successfully converted.</p>
-        <p class="text-sm flex flex-col">
+        <p class="text-sm flex flex-col break-all">
             <span class="text-gray-300">Output File:</span>
-            <span>{{ conversionOutput?.new_file_path }}</span>
+            <span>{{ dialog.selectedConversionInfo?.new_file_path }}</span>
         </p>
         <p class="text-sm flex flex-col">
             <span class="text-gray-300">Total Time:</span>
@@ -54,27 +94,29 @@
         </p>
 
         <template v-slot:footer>
-            <DButton @click="fileStore.conversionStatus = 'idle'" class="font-semibold self-end" variant="error">Close</DButton>
+            <DButton @click="dialog.toggleConversionInfo" class="font-semibold self-end" variant="error">Close</DButton>
         </template>
     </DModal>
 
     <DModal v-if="!isOnline" title="No Internet">
         Draconv needs internet connection to install required files on first install.
         If it's back but you still have this error, wait 5-10 seconds and try again.
-        If it doesn't work, <button @click="() => openUrl('https://github.com/Drackin/Draconv/issues/new')" class="underline cursor-pointer">click to report.</button>
+        If it doesn't work, <button @click="() => openUrl('https://github.com/Drackin/Draconv/issues/new')"
+            class="underline cursor-pointer">click to report.</button>
 
         <template #footer>
             <DButton @click="checkConnection" :disabled="checkingConnection">Try Again</DButton>
         </template>
     </DModal>
 
-    <SettingsModal v-model="isSettingsOpen" />
+    <SettingsModal v-model="dialog.isSettingsOpen" />
 
-    <DButton class="!p-3 fixed bottom-5 right-5" @click="toggleSettings">
+    <DButton class="!p-3 fixed bottom-5 right-5" @click="dialog.toggleSettings">
         <Icon name="solar:settings-outline" class="text-2xl" />
     </DButton>
 
-    <FFmpegInstall v-model="isFfmpegInstalling" :progressPercent="ffmpegInstallProgress" :installState="ffmpegInstallState" />
+    <FFmpegInstall v-model="dialog.isFfmpegInstalling" :progressPercent="ffmpegInstallProgress"
+        :installState="ffmpegInstallState" />
 
 </template>
 
@@ -87,33 +129,22 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { open } from '@tauri-apps/plugin-dialog';
 import { useFileStore } from "~/lib/useFileStore";
 import { useDialogs } from "~/lib/useDialogs";
-import type { ConversionOutput } from "~/lib/types";
-import supported_types from "@/assets/supported.json"
+import type { CompletedJob } from "~/lib/types";
 
 const appWindow = getCurrentWindow();
 
 const isDragEnter = ref(false);
-const isSupported = ref(false);
 const isOnline = ref(true)
 const checkingConnection = ref(false)
 
 const file_path = ref<string | null>(null);
-const convertibles = ref<string[]>([])
 const errorTitle = ref<string | null>(null);
 const errorDescription = ref<string | null>(null);
-const progressPercent = ref(0);
+const idToCancel = ref<string | null>(null);
 const ffmpegInstallProgress = ref(0);
 const ffmpegInstallState = ref("idle");
-const conversionOutput = ref<ConversionOutput | null>(null);
 const fileStore = useFileStore()
-const {
-    isSettingsOpen,
-    isDialogOpen,
-    isCancelling,
-    isFfmpegInstalling,
-    toggleSettings
-} = useDialogs()
-const fileData = fileStore.file_data
+const dialog = useDialogs()
 
 onMounted(async () => {
     document
@@ -128,8 +159,12 @@ onMounted(async () => {
     listen("tauri://drag-leave", () => isDragEnter.value = false)
     listen("tauri://drag-drop", (event) => {
         isDragEnter.value = false
-        file_path.value = (event as any).payload.paths[0]
-        getFileInfo(file_path.value as string)
+        const files = (event as any).payload.paths
+
+        for (let index = 0; index < files.length; index++) {
+            const file_path = files[index];
+            getFileInfo(file_path as string)
+        }
     })
 
     invoke("get_args")
@@ -145,43 +180,50 @@ onMounted(async () => {
     .then((installed) => {
         if(!installed) {
             if (checkConnection()) {
-                isFfmpegInstalling.value = true
+                dialog.isFfmpegInstalling = true
                 ffmpegInstallState.value = "idle"
             }
         }
     })
 
-    listen("conversion-started", () => {
-        fileStore.conversionStatus = "processing"
+    listen<{ id: string }>("job-started", (e) => {
+        fileStore.files.find(f => f.id === e.payload.id)!.conversionStatus = "processing"
     })
 
-    listen<string>("conversion-finished", (e) => {
-        conversionOutput.value = JSON.parse(e.payload) as ConversionOutput
-        fileStore.conversionStatus = "success"
+    listen<CompletedJob>("job-completed", (e) => {
+        fileStore.files.find(f => f.id === e.payload.id)!.conversionStatus = "success"
+        fileStore.convertedFiles.push(e.payload)
     })
 
-    listen<string>("conversion-error", (e) => {
-        fileStore.conversionStatus = "error"
+    listen<CompletedJob>("all-jobs-completed", (e) => {
+        fileStore.isProcessing = false
+    })
+
+    listen<{ id: string, error: string }>("job-failed", (e) => {
+        fileStore.files.find(f => f.id === e.payload.id)!.conversionStatus = "failed"
         errorTitle.value = "Conversion Failed"
-        errorDescription.value = e.payload || "An error occurred during the conversion process. Please try again."
-        isDialogOpen.value = true
+        errorDescription.value = e.payload.error || "An error occurred during the conversion process. Please try again."
+        fileStore.isProcessing = false
+        dialog.isDialogOpen = true
     })
     
-    listen("conversion-cancelled", () => {
-        fileStore.conversionStatus = "cancelled"
+    listen<{ id: string }>("job-cancelled", (e) => {
+        fileStore.files.find(f => f.id === e.payload.id)!.conversionStatus = "cancelled"
         errorTitle.value = "Conversion Cancelled"
         errorDescription.value = "The conversion process has been cancelled by the user."
-        isDialogOpen.value = true
+        fileStore.isProcessing = false
+        dialog.isDialogOpen = true
     })
 
-    listen("cancelling-failed", (e) => {
-        fileStore.conversionStatus = "error"
-        errorTitle.value = "Cancelling Failed"
-        errorDescription.value = e.payload as string
-        isDialogOpen.value = true
+    listen<{ id: string, progress: number }>("job-progress", (e) => {
+        const payload = e.payload
+        
+        const file = fileStore.files.find(f => f.id === payload.id)
+        
+        if (file) {
+            file.progress = payload.progress
+        }
     })
-
-    listen("conversion-progress", (e) => progressPercent.value = e.payload as number)
 
     listen<number>("ffmpeg-install-progress", (e) => {
         ffmpegInstallProgress.value = e.payload
@@ -194,13 +236,32 @@ onMounted(async () => {
     window.addEventListener("contextmenu", (event) => event.preventDefault());
 })
 
-const convert = async () => {
-    fileStore.conversionStatus = "processing"
-    invoke("convert", {
-        path: file_path.value,
-        extension: fileStore.selected_extension,
-        category: fileStore.file_data?.file_type
-    }).catch(e => console.log(e))
+const convert = async (id: string) => {
+    const file = fileStore.files.map(f => ({
+        id: f.id,
+        path: f.full_path,
+        extension: f.selected_extension,
+        category: f.file_type,
+    })).find(f => f.id === id)
+
+    fileStore.isProcessing = true
+    
+    await invoke("convert", file)
+}
+
+const convertAll = async () => {
+    const jobs = fileStore.files
+    .filter(file => file.selected_extension !== "unselected")
+    .map(file => ({
+        id: file.id,
+        path: file.full_path,
+        extension: file.selected_extension,
+        category: file.file_type,
+    }))
+
+    fileStore.isProcessing = true
+
+    await invoke("add_all_jobs", { files: jobs })
 }
 
 const checkConnection = () => {
@@ -213,13 +274,20 @@ const checkConnection = () => {
     return isOnline.value
 }
 
+const requestCancel = (id: string) => {
+    idToCancel.value = id
+    dialog.isCancelling = true
+}
+
 const cancelConversion = async () => {
-    isCancelling.value = false
-    appWindow.emit("cancel-conversion")
+    dialog.isCancelling = false
+    await invoke("cancel_job", { id: idToCancel.value })
+    fileStore.isProcessing = false
+    idToCancel.value = null
 }
 
 const formatTime = () => {
-    const totalSeconds = conversionOutput.value?.total_time || 0
+    const totalSeconds = dialog.selectedConversionInfo?.total_time || 0
     const timeArray: string[] = []
     const hours = Math.floor(totalSeconds / 3600)
     const minutes = Math.floor((totalSeconds % 3600) / 60)
@@ -234,11 +302,17 @@ const formatTime = () => {
 
 const selectFile = async () => {
     try {
-        file_path.value = await open({
-            multiple: false,
+        const files = await open({
+            multiple: true,
             directory: false
         });
-        getFileInfo(file_path.value as string)
+
+        if (files) {
+            for (let index = 0; index < files.length; index++) {
+            const file_path = files[index];
+                getFileInfo(file_path as string)
+            }
+        }
     } catch (e) {
         alert(e)
     }
@@ -255,37 +329,36 @@ const getFileInfo = async (path: string) => {
     if(fileStore.error) {
         errorTitle.value = fileStore.error.title
         errorDescription.value = fileStore.error.message
-        isDialogOpen.value = true
+        dialog.isDialogOpen = true
         return
     }
-
-    const type_key = fileStore.file_data?.file_type as keyof typeof supported_types
-
-    if (!type_key || !supported_types[type_key]) {
-        isSupported.value = false
-        convertibles.value = []
-        return
-    }
-
-    isSupported.value = supported_types[type_key].inputs.find(type => type === fileStore.file_data?.file_extension.toLowerCase()) ? true : false
-    getConvertibleTypes()
 }
 
-const getConvertibleTypes = () => {
-    convertibles.value = supported_types[fileStore.file_data?.file_type as keyof typeof supported_types].outputs
-    convertibles.value = convertibles.value ? convertibles.value.filter(type => type !== fileData?.file_extension) : []
+// to avoid item teleports to top bug when an item removed from the conversion list
+const onBeforeLeave = (el: Element) => {
+    const element = el as HTMLElement;
+    
+    const { width, height } = window.getComputedStyle(element);
+
+    element.style.left = `${element.offsetLeft}px`;
+    element.style.top = `${element.offsetTop}px`;
+    
+    element.style.width = width; 
+    element.style.height = height;
+
+    element.style.position = 'absolute';
 }
 </script>
 
 <style>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+    transition: opacity 0.3s ease;
 }
 
 .fade-enter-from,
 .fade-leave-to {
-  opacity: 0;
+    opacity: 0;
 }
 
 .file-info-enter-active {
@@ -293,7 +366,13 @@ const getConvertibleTypes = () => {
 }
 
 .file-info-leave-active {
-    animation: bounce-in 0.2s reverse linear;
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+}
+
+.file-info-move {
+    transition: transform 0.35s cubic-bezier(.22, 1, .36, 1);
 }
 
 @keyframes bounce-in {

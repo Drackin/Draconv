@@ -2,6 +2,7 @@
   "name": "nuxt-app",
   "type": "module",
   "private": true,
+  "version": "1.0.0-beta",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -11,22 +12,25 @@
     "tdev": "tauri dev"
   },
   "dependencies": {
-    "@tauri-apps/api": "^2.8.0",
-    "@tauri-apps/plugin-dialog": "^2.4.0",
-    "@tauri-apps/plugin-opener": "~2",
-    "@tauri-apps/plugin-shell": "~2",
-    "nuxt": "^4.1.0",
-    "tailwindcss": "^4.1.13",
-    "typescript": "^5.6.3",
-    "vue": "^3.5.20",
-    "vue-router": "^4.5.1"
+    "@nuxtjs/tailwindcss": "6.14.0",
+    "@tauri-apps/api": "^2.9.0",
+    "@tauri-apps/plugin-dialog": "^2.4.2",
+    "@tauri-apps/plugin-opener": "~2.5.2",
+    "@tauri-apps/plugin-shell": "~2.3.3",
+    "@tauri-apps/plugin-updater": "~2.10.0",
+    "nuxt": "^4.2.0",
+    "typescript": "^5.9.3",
+    "vue": "^3.5.22",
+    "vue-router": "^4.6.3"
   },
-  "packageManager": "pnpm@9.1.4+sha512.9df9cf27c91715646c7d675d1c9c8e41f6fce88246f1318c1aa6a1ed1aeb3c4f032fcdf4ba63cc69c4fe6d634279176b5358727d8f2cc1e65b65f43ce2f8bfb0",
+  "packageManager": "pnpm@10.28.0",
   "devDependencies": {
-    "@nuxt/icon": "^2.0.0",
+    "@iconify-json/ic": "^1.2.4",
+    "@iconify-json/simple-icons": "^1.2.66",
+    "@iconify-json/solar": "^1.2.5",
+    "@nuxt/icon": "^2.1.0",
     "@pinia/nuxt": "^0.11.2",
-    "@tailwindcss/vite": "^4.1.13",
-    "@tauri-apps/cli": "^2.8.4",
+    "@tauri-apps/cli": "^2.9.1",
     "gsap": "^3.13.0"
   }
 }

@@ -1204,7 +1204,7 @@ dependencies = [
 
 [[package]]
 name = "draconv"
-version = "1.0.1"
+version = "1.0.0-beta"
 dependencies = [
  "futures-util",
  "image",

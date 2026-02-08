@@ -1,7 +1,7 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "Draconv",
-  "version": "1.0-beta",
+  "version": "1.0.0-beta",
   "identifier": "draconv",
   "build": {
     "frontendDist": "../dist",
@@ -42,6 +42,9 @@
       "nsis": {
         "installerIcon": "icons/icon.ico",
         "sidebarImage": "icons/sidebar.bmp"
+      },
+      "wix": {
+        "version": "1.0.0.1"
       }
     }
   },

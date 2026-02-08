@@ -13,22 +13,22 @@
                 FFmpeg source code and license details are available at: <button class="underline cursor-pointer" @click="goFFmpegWebsite">https://ffmpeg.org/</button>
             </p>
 
-            <section v-if="installState === 'downloading'" class="relative space-y-3">
+            <section v-if="installState === 'downloading'" class="space-y-2">
                 <p>{{ progressPercent }}% installed</p>
                 <DProgress mode="percent" :percent="progressPercent" class="h-2" />
             </section>
 
-            <section v-else-if="installState === 'installing'" class="relative space-y-3">
+            <section v-else-if="installState === 'installing'" class="space-y-2">
                 <p>Installing FFmpeg...</p>
                 <DProgress mode="immediate" class="h-2" />
             </section>
 
-            <section v-else-if="installState === 'cleaning'" class="relative space-y-3">
+            <section v-else-if="installState === 'cleaning'" class="space-y-2">
                 <p>Finalizing installation...</p>
                 <DProgress mode="immediate" class="h-2" />
             </section>
 
-            <section v-else-if="installState === 'completed'" class="relative space-y-3">
+            <section v-else-if="installState === 'completed'" class="space-y-2">
                 <p>FFmpeg has been successfully installed. Now you are ready to use the app completely. All you have to do is click on "Done".</p>
             </section>
         </div>
@@ -56,7 +56,6 @@ const isOpen = defineModel<boolean>()
 
 const goFFmpegWebsite = async () => {
     await openUrl('https://ffmpeg.org/');
-    console.log('Opened FFmpeg website');
 }
 
 </script>

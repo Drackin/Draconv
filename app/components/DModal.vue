@@ -3,13 +3,13 @@
         <Transition name="modal">
             <div v-bind="$attrs" ref="backdropRef" v-if="isOpen" class="flex items-center justify-center fixed w-screen h-screen bg-black/50 z-10 top-0 left-0">
                 
-                <section ref="dialogRef" class="rounded-xl bg-[#111] p-2 min-w-[50vw] max-w-1/2">
+                <section ref="dialogRef" class="flex flex-col rounded-xl bg-[#111] p-2 w-[50vw] max-w-1/2 max-h-[90vh]">
                     
                     <header v-if="title" class="flex items-center justify-center text-lg p-3">
                         <p class="font-semibold">{{ title }}</p>
                     </header>
     
-                    <main class="p-3 space-y-3 overflow-auto text-sm">
+                    <main class="flex-1 p-3 space-y-3 h-full overflow-y-auto text-sm">
                         <slot />
                     </main>
     
@@ -23,8 +23,10 @@
 </template>
 
 <script setup lang="ts">
+import { useDialogs } from '~/lib/useDialogs'
+
 const dialogRef = ref<HTMLElement | null>(null)
-const backdropRef = ref<HTMLElement | null>(null)
+const dialog = useDialogs()
 
 defineOptions({ inheritAttrs: false })
 
@@ -51,6 +53,8 @@ const onKey = (e: KeyboardEvent) => {
 }
 
 const onClickOutside = (e: MouseEvent) => {
+    if(dialog.disableClickOutsideSettings) return
+
     if (props.closeClickOutside && dialogRef.value && !dialogRef.value.contains(e.target as Node)) {
         close()
     }

@@ -4,11 +4,11 @@ use std::fs;
 #[cfg(unix)]
 use std::os::unix::fs::PermissionsExt;
 use std::{cmp::min, io::Write};
-#[cfg(target_os = "linux")]
+#[cfg(unix)]
 use tar::Archive;
 use tauri::{Emitter, Manager};
 use thiserror::Error;
-#[cfg(target_os = "linux")]
+#[cfg(unix)]
 use xz::read::XzDecoder;
 
 #[derive(Debug, Error)]
