@@ -12,13 +12,24 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - platform: 'macos-latest'
-                      args: '--target universal-apple-darwin'
+                    - platform: 'macos-latest' # Apple Silicon (M1 and above)
+                      os: macos
+                      arch: arm64
+                      args: '--target aarch64-apple-darwin'
+
+                    - platform: 'macos-latest' # Intel (x86_64)
+                      os: macos
+                      arch: x64
+                      args: '--target x86_64-apple-darwin'
 
                     - platform: 'ubuntu-22.04'
+                      os: linux
+                      arch: x64
                       args: ''
 
                     - platform: 'windows-latest'
+                      os: windows
+                      arch: x64
                       args: ''
 
         runs-on: ${{ matrix.platform }}
@@ -83,5 +94,6 @@ jobs:
                 releaseBody: ${{ steps.release_notes.outputs.BODY }}
                 releaseDraft: false
                 prerelease: false
+                assetNamePattern: 'Draconv-[version]-${{ matrix.os }}-${{ matrix.arch }}[ext]'
                 args: ${{ matrix.args }}
 

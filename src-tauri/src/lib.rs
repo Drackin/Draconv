@@ -2,9 +2,11 @@ use serde::Serialize;
 use std::{env, fs::metadata, path::Path};
 use tauri::{Manager, State};
 use uuid::Uuid;
+use tauri_plugin_opener::open_path;
 
 mod helpers;
 mod tools;
+mod plugins;
 
 use helpers::{
     net_helper::check_connection,
@@ -12,6 +14,9 @@ use helpers::{
     settings_helper::{load_settings, reset_settings, save_settings},
 };
 use tools::installer::{install_ffmpeg, is_ffmpeg_installed};
+
+#[cfg(target_os = "macos")]
+use plugins::mac_rounded_corners;
 
 use crate::{helpers::queue_helper::JobRequest, tools::error::Error};
 
@@ -78,6 +83,7 @@ fn get_args() -> Vec<String> {
 async fn add_job(
     id: String,
     path: String,
+    output_file_name: String,
     extension: String,
     category: String,
     manager: State<'_, PipelineManager>,
@@ -86,6 +92,7 @@ async fn add_job(
         .add_job(JobRequest {
             id,
             path,
+            output_file_name,
             extension,
             category,
         })
@@ -97,6 +104,7 @@ async fn add_job(
 async fn convert(
     id: String,
     path: String,
+    output_file_name: String,
     extension: String,
     category: String,
     manager: State<'_, PipelineManager>,
@@ -105,6 +113,7 @@ async fn convert(
         .add_job(JobRequest {
             id,
             path,
+            output_file_name,
             extension,
             category,
         })
@@ -137,9 +146,19 @@ async fn cancel_all_jobs(manager: State<'_, PipelineManager>) -> Result<(), Erro
     Ok(())
 }
 
+#[tauri::command]
+fn open_file(path: String) -> Result<(), String> {
+    open_path(&path, None::<&str>).map_err(|e| e.to_string())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let context = tauri::generate_context!();
+    #[cfg(target_os = "macos")]
+    let context = mac_rounded_corners::configure_context(context);
+
     tauri::Builder::default()
+        .plugin(tauri_plugin_os::init())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             let window = app.get_webview_window("main").unwrap();
@@ -150,6 +169,7 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_log::Builder::new().build())
         .setup(move |app| {
             let handle = app.handle().clone();
             tools::app_handle::init_global_app(handle);
@@ -158,6 +178,15 @@ pub fn run() {
 
             let manager = PipelineManager::new(settings.max_concurrency);
             app.manage(manager);
+
+            #[cfg(target_os = "macos")]
+            {
+                let window = app.get_webview_window("main").ok_or_else(|| {
+                    std::io::Error::new(std::io::ErrorKind::NotFound, "main window is missing")
+                })?;
+                mac_rounded_corners::initialize_main_window(&window)?;
+                window.show()?;
+            }
 
             Ok(())
         })
@@ -176,7 +205,8 @@ pub fn run() {
             add_all_jobs,
             cancel_job,
             cancel_all_jobs,
+            open_file,
         ])
-        .run(tauri::generate_context!())
+        .run(context)
         .expect("error while running tauri application");
 }

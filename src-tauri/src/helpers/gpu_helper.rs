@@ -67,13 +67,12 @@ pub async fn get_vendor() -> GpuVendor {
 
 // Map base codec to GPU hardware encoder based on vendor
 pub fn get_gpu_hw_encoder(base_codec: &str, vendor: GpuVendor) -> Option<&'static str> {
-
     if cfg!(target_os = "macos") {
         return match base_codec {
             "libx264" => Some("h264_videotoolbox"),
             "libx265" => Some("hevc_videotoolbox"),
             _ => None,
-        }
+        };
     }
     /*
         LIBX264 -> H264 (MPEG-4 AVC etc.)
@@ -171,7 +170,6 @@ pub async fn select_best_encoder() -> (Encoder, String, Vec<String>, String) {
                 hw_accel_method.to_string(),
             ), // INTEL QSV
 
-
             GpuVendor::APPLE => {
                 let mut mac_args: Vec<String> = vec![
                     "-allow_sw".into(), // Allow software fallback if hardware encoder fails
@@ -193,8 +191,8 @@ pub async fn select_best_encoder() -> (Encoder, String, Vec<String>, String) {
                     mac_args,
                     hw_accel_method.to_string(),
                 )
-            },
-            
+            }
+
             GpuVendor::UNKNOWN => (
                 Encoder::CPU,
                 settings.default_encoder,

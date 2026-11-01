@@ -1,9 +1,9 @@
 [package]
 name = "draconv"
-version = "1.0.0-beta"
+version = "1.0.0"
 description = "A modern, free and open-source file converter."
 authors = ["Drackin"]
-license = "NPOSL-3.0"
+license = "GNU General Public License v3.0"
 repository = "https://github.com/Drackin/Draconv"
 edition = "2021"
 rust-version = "1.77.2"
@@ -37,7 +37,20 @@ zip = "6.0.0"
 thiserror = "2.0.17"
 tauri-plugin-prevent-default = "3.0.3"
 uuid = { version = "1.18.1", features = ["v4"] }
+tauri-plugin-os = "2"
 
 [target.'cfg(not(any(target_os = "android", target_os = "ios")))'.dependencies]
 tauri-plugin-single-instance = "2"
 tauri-plugin-updater = "2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+objc2-app-kit = { version = "0.3.2", default-features = false, features = [
+    "std",
+    "NSButton",
+    "NSControl",
+    "NSResponder",
+    "NSView",
+    "NSWindow",
+    "objc2-quartz-core",
+] }
+objc2-foundation = { version = "0.3.2", default-features = false, features = ["std", "NSGeometry"] }

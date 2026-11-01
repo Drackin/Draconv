@@ -1,6 +1,6 @@
 <template>
-    <li
-        class="w-full gap-2"
+    <div
+        class="w-full gap-2 text-sm hover:bg-muted/30 rounded-xl p-2 transition"
         :class="position === 'row' ? 'flex justify-between items-center' : 'flex flex-col'"
     >
         <p class="flex flex-col shrink-0">
@@ -25,7 +25,7 @@
         >
             <slot />
         </section>
-    </li>
+    </div>
 </template>
 
 <script setup lang="ts">

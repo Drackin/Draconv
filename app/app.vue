@@ -1,9 +1,10 @@
 <template>
-    <div class="w-screen h-screen">
-        <div class="fixed w-full -bottom-5 left-0 z-[-1]">
-            <img src="/bg.svg" class="w-full h-full" alt="">
+    <div class="relative isolate w-screen h-screen overflow-hidden bg-[#111]">
+        <div class="ambient-lights fixed inset-0 -z-10 overflow-hidden" aria-hidden="true">
+            <div class="ambient-light ambient-light-top"></div>
+            <div class="ambient-light ambient-light-bottom"></div>
         </div>
-        <DNavbar />
+        <Navbar />
         <main class="p-3 w-full overflow-auto" style="height: calc(100% - 3.5rem);">
             <NuxtPage />
         </main>
@@ -11,15 +12,27 @@
 </template>
 
 <style>
-:root, body {
-    color: #fff;
-    color-scheme: dark;
-    font-family: "Space Grotesk", sans-serif;
-    user-select: none;
+
+.ambient-light {
+    position: absolute;
+    width: 30rem;
+    height: 30rem;
+    border-radius: 9999px;
+    background: #fff;
+    filter: blur(110px);
+    opacity: 0.08;
+    pointer-events: none;
 }
 
-body {
-    background: #111;
+.ambient-light-top {
+    top: -15rem;
+    left: 8%;
+}
+
+.ambient-light-bottom {
+    right: -12rem;
+    bottom: -18rem;
+    opacity: 0.06;
 }
 
 @font-face {

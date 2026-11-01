@@ -37,6 +37,7 @@ export const useFileStore = defineStore('file', {
                     selected_extension: "unselected",
                     isSupported,
                     convertibles,
+                    output_file_name: fileInfo.file_name,
                     conversionStatus: "idle"
                 });
 
@@ -45,7 +46,8 @@ export const useFileStore = defineStore('file', {
                 return {
                     ...fileInfo,
                     file_type: type,
-                    selected_extension: "unselected"
+                    selected_extension: "unselected",
+                    output_file_name: fileInfo.file_name,
                 }
             } catch (e: any) {
                 this.error = { title: "Error", message: e }
@@ -53,6 +55,7 @@ export const useFileStore = defineStore('file', {
                 return null
             }
         },
+        
         deleteFile(id: string) {
             this.files = this.files.filter(file => file.id !== id)
 

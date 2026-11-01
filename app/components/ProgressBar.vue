@@ -1,7 +1,7 @@
 <template>
     <div v-bind="$attrs" class="h-1 w-full rounded-full bg-neutral-900 progress-track overflow-hidden">
-        <div v-if="mode === 'immediate'" class="w-1/3 h-full bg-green-500 rounded-full progress-immediate-thumb"></div>
-        <div v-else ref="trackRef" class="h-full bg-green-500 rounded-full"></div>
+        <div v-if="mode === 'immediate'" class="w-1/3 h-full bg-white rounded-full progress-immediate-thumb"></div>
+        <div v-else ref="trackRef" class="h-full bg-white rounded-full"></div>
     </div>
 </template>
 

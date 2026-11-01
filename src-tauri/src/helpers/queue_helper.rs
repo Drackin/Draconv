@@ -13,6 +13,7 @@ use crate::tools::{app_handle::app, convert, error::Error};
 struct PipelineJob {
     pub id: Uuid,
     pub path: String,
+    pub output_file_name: String,
     pub extension: String,
     pub category: String,
     //pub cancel_notifier: Arc<Notify> (Notifier created while process, to decrease the RAM usage)
@@ -22,6 +23,7 @@ struct PipelineJob {
 pub struct JobRequest {
     pub id: String,
     pub path: String,
+    pub output_file_name: String,
     pub extension: String,
     pub category: String,
 }
@@ -56,6 +58,7 @@ impl PipelineManager {
         let job = PipelineJob {
             id,
             path: job.path,
+            output_file_name: job.output_file_name,
             extension: job.extension,
             category: job.category,
         };
@@ -79,6 +82,7 @@ impl PipelineManager {
             queue.push_back(PipelineJob {
                 id,
                 path: job.path,
+                output_file_name: job.output_file_name,
                 extension: job.extension,
                 category: job.category,
             });
@@ -179,6 +183,7 @@ impl PipelineManager {
                         let result = convert::exec_conversion(
                             job.id,
                             &job.path,
+                            &job.output_file_name,
                             &job.extension,
                             &job.category,
                             &notify_clone,

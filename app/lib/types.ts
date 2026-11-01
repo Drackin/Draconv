@@ -7,7 +7,8 @@ export type FileData = {
     file_type: string,
     full_path: string
     selected_extension: string
-    isSupported: boolean,
+    output_file_name: string
+    isSupported: boolean
     convertibles: string[]
     conversionStatus: "idle" | "queued" | "processing" | "failed" | "success" | "cancelled"
     progress?: number

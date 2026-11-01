@@ -12,6 +12,7 @@ node_modules
 # Logs
 logs
 *.log
+!/public/example.log
 
 # Misc
 .DS_Store

@@ -1,4 +1,4 @@
-//import tailwindcss from '@tailwindcss/vite'
+import tailwindcss from '@tailwindcss/vite'
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -6,26 +6,24 @@ export default defineNuxtConfig({
     compatibilityDate: '2025-07-15',
     devtools: { enabled: true },
 
+    css: ['~/assets/css/main.css'],
+
     vite: {
         clearScreen: false,
         envPrefix: ['VITE_', 'TAURI_'],
         server: {
             strictPort: true,
         },
-        //plugins: [tailwindcss()]
+        plugins: [tailwindcss()]
     },
+
     nitro: {
         preset: 'static'
     },
 
     icon: {
-        serverBundle: "local"
+        serverBundle: "local",
     },
-    tailwindcss: {
-        exposeConfig: false,
-        viewer: false
-    },
-
     ignore: ['/src-tauri/'],
-    modules: ['@nuxt/icon', '@pinia/nuxt', '@nuxtjs/tailwindcss']
+    modules: ['@nuxtjs/color-mode', '@nuxt/icon', '@pinia/nuxt', 'shadcn-nuxt']
 })

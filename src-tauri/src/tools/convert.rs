@@ -21,17 +21,16 @@ use crate::tools::{app_handle::app, error::Error, stopwatch};
 pub async fn exec_conversion(
     id: Uuid,
     path: &str,
+    output_file_name: &str,
     extension: &str,
     category: &str,
     cancel_notify: &Arc<Notify>,
 ) -> Result<(), Error> {
     let file = Path::new(&path);
-    let stem = file
-        .file_stem()
-        .and_then(|s| s.to_str())
-        .ok_or(Error::InvalidPath)?;
-    let full_path = file.parent().unwrap().join(stem);
+    let full_path = file.parent().unwrap().join(output_file_name);
     let output_path = format!("{}.{}", full_path.to_str().unwrap().to_owned(), &extension);
+
+    println!("file:{} full_path:{} outputfilename:{} extension:{} category:{}", file.to_str().unwrap(), full_path.to_str().unwrap(), output_file_name, extension, category);
 
     let args = ffmpeg_builder(&path, &output_path, &extension).await;
     let settings = settings_helper::load_settings();
@@ -159,6 +158,9 @@ pub async fn exec_conversion(
         "image" => {
             //if cancel_notify.notified().await { return Err(Error::ConversionCancelled); }
 
+            let mut timer = stopwatch::Stopwatch::new();
+            timer.start();
+
             let mut img = image::open(file).unwrap();
 
             if extension == "ico" {
@@ -174,7 +176,15 @@ pub async fn exec_conversion(
 
             img.save(&output_path)
                 .map_err(|e| Error::ImageError(e.to_string()))?;
-            let _ = app().emit("job-completed", json!({ "id": id }));
+            let _ = app().emit(
+                "job-completed",
+                json!({
+                    "id": id.to_string(),
+                    "total_time": timer.elapsed().as_secs(),
+                    "input_file": path,
+                    "new_file_path": output_path
+                }),
+            );
 
             if settings.open_when_finished {
                 open_path(&output_path, None::<&str>).unwrap();

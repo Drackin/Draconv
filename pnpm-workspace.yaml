@@ -1,3 +1,4 @@
 onlyBuiltDependencies:
+  - '@cloudworxx/tauri-plugin-mac-rounded-corners'
   - '@parcel/watcher'
   - esbuild
