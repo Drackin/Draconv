@@ -9,7 +9,7 @@
                 </UiDialogDescription>
             </UiDialogHeader>
         
-            <ul class="flex flex-col px-4 space-y-2 overflow-scroll w-full">
+            <ul class="flex min-h-0 flex-col px-4 space-y-2 overflow-x-hidden overflow-y-auto w-full">
 
                 <DialogSettingsItem title="Open File When Finished" subtitle="Auto open the file when the conversion is finished." position="row">
                     <label class="inline-flex items-center cursor-pointer">
