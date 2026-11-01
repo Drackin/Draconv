@@ -7,7 +7,7 @@
                     Encoders to suit your needs. Each encoder has its own advantages and is designed for different scenarios. Please read the descriptions below to understand the differences between them.
                 </UiDialogDescription>
             </UiDialogHeader>
-            <div class="flex flex-col space-y-3 overflow-scroll">
+            <div class="flex min-h-0 flex-col space-y-3 overflow-x-hidden overflow-y-auto">
                 <ul class="flex flex-col space-y-3">
                     <li>
                         <span class="p-1 bg-neutral-900 rounded-lg border border-neutral-800">H.264</span>:
