@@ -1,4 +1,5 @@
-onlyBuiltDependencies:
-  - '@cloudworxx/tauri-plugin-mac-rounded-corners'
-  - '@parcel/watcher'
-  - esbuild
+allowBuilds:
+  # Its installer overwrites our customized Rust window implementation.
+  '@cloudworxx/tauri-plugin-mac-rounded-corners': false
+  '@parcel/watcher': true
+  esbuild: true
