@@ -1,6 +1,6 @@
 [package]
 name = "draconv"
-version = "1.0.0"
+version = "1.0.1"
 description = "A modern, free and open-source file converter."
 authors = ["Drackin"]
 license = "GNU General Public License v3.0"

@@ -71,7 +71,7 @@ jobs:
             - name: Install pnpm
               uses: pnpm/action-setup@v3
               with:
-                version: latest
+                version: 12.18.0
 
             - name: Node.js Installation
               uses: actions/setup-node@v4
@@ -81,6 +81,10 @@ jobs:
 
             - name: Install Frontend Dependencies
               run: pnpm install
+
+            - name: Check macOS Rust Build
+              if: matrix.os == 'macos'
+              run: cargo check --locked --manifest-path src-tauri/Cargo.toml ${{ matrix.args }}
 
             - name: "Build and Release"
               uses: tauri-apps/tauri-action@v0

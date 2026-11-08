@@ -4,7 +4,7 @@
 ![Static Badge](https://img.shields.io/badge/Nuxt-v4-gray?style=flat-square&logo=nuxt&labelColor=darkgreen)
 ![Static Badge](https://img.shields.io/badge/Tauri-v2-grey?style=flat-square&logo=tauri&labelColor=blue)
 ![Static Badge](https://img.shields.io/badge/OS-macOS%2C%20Windows%2C%20Linux-red?style=flat-square)
-![Static Badge](https://img.shields.io/badge/License-NPOSL--3.0-blue?style=flat-square)
+![Static Badge](https://img.shields.io/badge/License-GPL--v3.0-blue?style=flat-square)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/Drackin/Draconv/releases.yml?style=flat-square&logo=github&label=Build%20Status)
 [![GitHub issues](https://img.shields.io/github/issues/Drackin/Draconv?style=flat-square&logo=github&label=Issues)](https://github.com/Drackin/Draconv/issues)
 ![GitHub Release](https://img.shields.io/github/v/release/Drackin/Draconv?label=Latest%20Release&style=flat-square&color=purple)

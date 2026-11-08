@@ -2,7 +2,7 @@
   "name": "nuxt-app",
   "type": "module",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
@@ -33,7 +33,7 @@
     "vue-router": "^4.6.3",
     "vue-sonner": "^2.0.9"
   },
-  "packageManager": "pnpm@10.28.0",
+  "packageManager": "pnpm@12.18.0",
   "devDependencies": {
     "@iconify-json/lucide": "^1.2.147",
     "@iconify-json/simple-icons": "^1.2.66",

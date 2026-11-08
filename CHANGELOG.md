@@ -5,6 +5,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-11-08
+### Fixed
+- Include the macOS window implementation using objc2 and its matching dependencies in the release.
+- Check both macOS Rust targets before packaging release artifacts.
+
 ## [1.0.0] - 2026-10-25
 ### Added
 - Initial release of Draconv, a user-friendly video converter built with Tauri and FFmpeg.
